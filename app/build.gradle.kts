@@ -10,30 +10,30 @@ setupApp()
 
 val buildHevSocks5Tunnel by tasks.registering {
     group = "build"
-    description = "Build hev-socks5-tunnel native library with ndk-build"
+    description = "Download pre-built hev-socks5-tunnel native library"
 
-    val srcDir = file("../library/hev-tunnel")
-    val hevSrcDir = file("../library/hev-tunnel/hev-socks5-tunnel")
-    val outDir = file("src/main/jniLibs")
-
-    inputs.dir(file("$hevSrcDir/src"))
-    outputs.dir(file("$hevSrcDir/libs"))
+    val jniLibsDir = file("src/main/jniLibs")
+    val hevVersion = "2.15.0"
+    val abis = mapOf(
+        "arm64-v8a" to "hev-socks5-tunnel-linux-arm64",
+        "armeabi-v7a" to "hev-socks5-tunnel-linux-arm32v7",
+        "x86" to "hev-socks5-tunnel-linux-i686",
+        "x86_64" to "hev-socks5-tunnel-linux-x86_64",
+    )
 
     doLast {
-        val ndkBuild = if (System.getProperty("os.name").startsWith("Windows")) "ndk-build.cmd" else "ndk-build"
-        val ndkPath = System.getenv("ANDROID_NDK_HOME")
-        val ndk = "$ndkPath/$ndkBuild"
-
-        project.exec {
-            workingDir = srcDir
-            commandLine(ndk, "-j${Runtime.getRuntime().availableProcessors()}", "NDK_PROJECT_PATH=.", "APP_BUILD_SCRIPT=Android.mk")
-        }
-
-        copy {
-            from("$hevSrcDir/libs") {
-                include("**/*.so")
+        abis.forEach { (abi, releaseName) ->
+            val targetDir = file("$jniLibsDir/$abi")
+            val targetFile = file("$targetDir/libhev-socks5-tunnel.so")
+            if (targetFile.exists() && targetFile.length() > 0) return@forEach
+            targetDir.mkdirs()
+            val url = "https://github.com/heiher/hev-socks5-tunnel/releases/download/$hevVersion/$releaseName"
+            logger.lifecycle("Downloading $url -> $targetFile")
+            java.net.URI.create(url).toURL().openStream().use { input ->
+                targetFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
             }
-            into(outDir)
         }
     }
 }
