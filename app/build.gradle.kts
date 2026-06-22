@@ -10,6 +10,14 @@ setupApp()
 
 android {
     namespace = "io.nekohasekai.sagernet"
+
+    externalNativeBuild {
+        cmake {
+            path = file("../library/hev-tunnel/CMakeLists.txt")
+        }
+    }
+
+    ndkVersion = "27.0.12077973"
 }
 
 ksp {

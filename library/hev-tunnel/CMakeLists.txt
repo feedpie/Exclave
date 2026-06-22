@@ -1,0 +1,63 @@
+cmake_minimum_required(VERSION 3.10)
+project("hev-socks5-tunnel" C)
+
+set(CMAKE_C_STANDARD 11)
+
+file(GLOB_RECURSE HEV_SOURCES
+    hev-socks5-tunnel/src/*.c
+    hev-socks5-tunnel/src/*.S
+)
+list(FILTER HEV_SOURCES EXCLUDE REGEX ".*hev-wintun\\.c$")
+list(FILTER HEV_SOURCES EXCLUDE REGEX ".*hev-tunnel-windows\\.c$")
+
+file(GLOB_RECURSE YAML_SOURCES
+    hev-socks5-tunnel/third-part/yaml/src/*.c
+)
+
+file(GLOB_RECURSE LWIP_SOURCES
+    hev-socks5-tunnel/third-part/lwip/src/api/*.c
+    hev-socks5-tunnel/third-part/lwip/src/core/*.c
+    hev-socks5-tunnel/third-part/lwip/src/core/ipv4/*.c
+    hev-socks5-tunnel/third-part/lwip/src/core/ipv6/*.c
+    hev-socks5-tunnel/third-part/lwip/src/netif/*.c
+    hev-socks5-tunnel/third-part/lwip/src/netif/ppp/*.c
+    hev-socks5-tunnel/third-part/lwip/src/netif/ppp/polarssl/*.c
+    hev-socks5-tunnel/third-part/lwip/src/ports/lib/*.c
+    hev-socks5-tunnel/third-part/lwip/src/ports/lib/*.S
+    hev-socks5-tunnel/third-part/lwip/src/ports/unix/lib/*.c
+    hev-socks5-tunnel/third-part/lwip/src/ports/unix/netif/*.c
+)
+
+file(GLOB_RECURSE TASK_SOURCES
+    hev-socks5-tunnel/third-part/hev-task-system/src/*.c
+    hev-socks5-tunnel/third-part/hev-task-system/src/*.S
+)
+
+add_library(hev-socks5-tunnel SHARED
+    ${HEV_SOURCES}
+    ${YAML_SOURCES}
+    ${LWIP_SOURCES}
+    ${TASK_SOURCES}
+)
+
+target_include_directories(hev-socks5-tunnel PRIVATE
+    hev-socks5-tunnel/src
+    hev-socks5-tunnel/src/misc
+    hev-socks5-tunnel/src/core/include
+    hev-socks5-tunnel/third-part/yaml/include
+    hev-socks5-tunnel/third-part/lwip/src/include
+    hev-socks5-tunnel/third-part/lwip/src/ports/include
+    hev-socks5-tunnel/third-part/lwip/src/ports/unix/include
+    hev-socks5-tunnel/third-part/hev-task-system/include
+)
+
+target_compile_definitions(hev-socks5-tunnel PRIVATE
+    FD_SET_DEFINED
+    SOCKLEN_T_DEFINED
+    ENABLE_LIBRARY
+    PKGNAME=io/nekohasekai/sagernet/bg
+    CLSNAME=HevTunnel
+)
+
+find_library(log-lib log)
+target_link_libraries(hev-socks5-tunnel PRIVATE ${log-lib})

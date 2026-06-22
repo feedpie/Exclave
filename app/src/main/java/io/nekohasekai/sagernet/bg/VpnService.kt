@@ -30,7 +30,9 @@ import android.net.ProxyInfo
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.PowerManager
-import io.nekohasekai.sagernet.*
+import io.nekohasekai.sagernet.Key
+import io.nekohasekai.sagernet.SagerNet
+import io.nekohasekai.sagernet.aidl.AppStats
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.database.SagerDatabase
 import io.nekohasekai.sagernet.database.StatsEntity
@@ -44,15 +46,12 @@ import io.nekohasekai.sagernet.utils.Subnet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import libexclavecore.*
+import libexclavecore.TunImplementation
 import android.net.VpnService as BaseVpnService
 
 @SuppressLint("VpnServicePolicy")
 class VpnService : BaseVpnService(),
-    BaseService.Interface,
-    TrafficListener,
-    Protector,
-    LocalResolver {
+    BaseService.Interface {
 
     companion object {
         var instance: VpnService? = null
@@ -87,7 +86,7 @@ class VpnService : BaseVpnService(),
     }
 
     lateinit var conn: ParcelFileDescriptor
-    var tun: Tun2ray? = null
+    private var hevTunnelHandle: HevTunnelHandle? = null
 
     private var active = false
     private var metered = false
@@ -110,6 +109,7 @@ class VpnService : BaseVpnService(),
     override suspend fun startProcesses() {
         startVpn()
         super.startProcesses()
+        startHevTunnel()
     }
 
     override var wakeLock: PowerManager.WakeLock? = null
@@ -120,19 +120,13 @@ class VpnService : BaseVpnService(),
             .apply { acquire() }
     }
 
-    @Suppress("EXPERIMENTAL_API_USAGE")
     override fun killProcesses() {
-        data.proxy?.v2rayPoint?.withLocalResolver(null)
-        tun?.apply {
-            close()
-        }
+        hevTunnelHandle?.close()
+        hevTunnelHandle = null
         if (::conn.isInitialized) conn.close()
         super.killProcesses()
         persistAppStats()
         active = false
-        tun?.apply {
-            tun = null
-        }
         networkListenerIsRunning = false
         GlobalScope.launch(Dispatchers.Default) { DefaultNetworkListener.stop(this) }
     }
@@ -215,7 +209,6 @@ class VpnService : BaseVpnService(),
                         builder.addRoute(subnet.address.hostAddress!!, subnet.prefixSize)
                     }
                 } else {
-                    // https://issuetracker.google.com/issues/149636790
                     builder.addRoute("2000::", 3)
                     if (DataStore.enableFakeDns) {
                         builder.addRoute(FAKEDNS_VLAN6_CLIENT, FAKEDNS_VLAN6_CLIENT_PREFIX)
@@ -284,54 +277,27 @@ class VpnService : BaseVpnService(),
         }
 
         conn = builder.establish() ?: throw NullConnectionException()
-        active = true   // possible race condition here?
+        active = true
+    }
 
-        data.proxy!!.v2rayPoint.withLocalResolver(this)
-
-        val config = TunConfig().apply {
-            fileDescriptor = conn.fd
-            protect = needIncludeSelf
-            mtu = DataStore.mtu
-            discardICMP = DataStore.discardICMP
-            v2Ray = data.proxy!!.v2rayPoint
-            addr4 = PRIVATE_VLAN4_CLIENT
-            addr6 = PRIVATE_VLAN6_CLIENT
-            dns4 = PRIVATE_VLAN4_DNS
-            dns6 = PRIVATE_VLAN6_DNS ?: ""
-            enableIPv6 = DataStore.enableVPNInterfaceIPv6Address
-            implementation = tunImplementation
-            sniffing = DataStore.trafficSniffing
-            overrideDestination = DataStore.destinationOverride
-            // fakeDNS = DataStore.enableFakeDns
-            fakeDNS = data.proxy!!.config.useFakeDNS
-            dumpUID = data.proxy!!.config.dumpUID
-            trafficStats = DataStore.appTrafficStatistics
-            pCap = DataStore.enablePcap
-            protector = this@VpnService
-        }
-
-        if (DataStore.experimentalFlagsProperties.getBooleanProperty("discardIPv6BasedOnNetwork")) {
-            config.discardIPv6BasedOnNetwork = true
-        }
-
-        if (tunImplementation == TunImplementation.SYSTEM) {
-            config.protectPath = SagerNet.deviceStorage.noBackupFilesDir.toString() + "/protect_path"
-        }
-
-        tun = Libexclavecore.newTun2ray(config)
+    private fun startHevTunnel() {
+        val yaml = buildHevConfig(
+            socksPort = DataStore.socksPort,
+            mtu = DataStore.mtu,
+        )
+        hevTunnelHandle = HevTunnel.start(
+            configYaml = yaml,
+            tunFd = conn.fd,
+            dataDir = applicationContext.filesDir.absolutePath,
+        )
+        Logs.d("HevTunnel started with SOCKS5 port ${DataStore.socksPort}")
     }
 
     val appStats = mutableListOf<AppStats>()
 
-    override fun updateStats(stats: AppStats) {
-        appStats.add(stats)
-    }
-
     fun persistAppStats() {
         if (!DataStore.appTrafficStatistics) return
-        val tun = tun ?: return
-        appStats.clear()
-        tun.readAppTraffics(this)
+        if (appStats.isEmpty()) return
         val toUpdate = mutableListOf<StatsEntity>()
         val all = SagerDatabase.statsDao.all().associateBy { it.uid }
         for (stats in appStats) {
