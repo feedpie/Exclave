@@ -32,8 +32,8 @@ file(GLOB_RECURSE TASK_SOURCES
     hev-socks5-tunnel/third-part/hev-task-system/src/*.c
     hev-socks5-tunnel/third-part/hev-task-system/src/*.S
 )
-list(FILTER TASK_SOURCES EXCLUDE REGEX ".*hev-task-system/src/lib/rbtree/.*\\.c$")
-list(FILTER TASK_SOURCES EXCLUDE REGEX ".*hev-task-system/src/lib/list/.*\\.c$")
+list(FILTER TASK_SOURCES EXCLUDE REGEX ".*hev-task-system/src/lib/rbtree/hev-rbtree\\.c$")
+list(FILTER TASK_SOURCES EXCLUDE REGEX ".*hev-task-system/src/lib/list/hev-list\\.c$")
 
 add_library(hev-socks5-tunnel SHARED
     ${HEV_SOURCES}
