@@ -77,8 +77,8 @@ class SagerConnection(private var listenForDeath: Boolean = false) : ServiceConn
             }
         }
 
-        /* TODO: fix - overrides nothing in Stub */
-        fun trafficUpdated(profileId: Long, stats: TrafficStats, isCurrent: Boolean) {
+        @Suppress("OVERRIDE_DEPRECATION")
+        override fun trafficUpdated(profileId: Long, stats: TrafficStats, isCurrent: Boolean) {
             val callback = callback ?: return
             runOnMainDispatcher {
                 callback.trafficUpdated(profileId, stats, isCurrent)
