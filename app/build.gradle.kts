@@ -12,11 +12,12 @@ val buildHevSocks5Tunnel by tasks.registering {
     group = "build"
     description = "Build hev-socks5-tunnel native library with ndk-build"
 
-    val srcDir = file("../library/hev-tunnel/hev-socks5-tunnel")
+    val srcDir = file("../library/hev-tunnel")
+    val hevSrcDir = file("../library/hev-tunnel/hev-socks5-tunnel")
     val outDir = file("src/main/jniLibs")
 
-    inputs.dir(file("$srcDir/src"))
-    outputs.dir(file("$srcDir/libs"))
+    inputs.dir(file("$hevSrcDir/src"))
+    outputs.dir(file("$hevSrcDir/libs"))
 
     doLast {
         val ndkBuild = if (System.getProperty("os.name").startsWith("Windows")) "ndk-build.cmd" else "ndk-build"
@@ -29,7 +30,7 @@ val buildHevSocks5Tunnel by tasks.registering {
         }
 
         copy {
-            from("$srcDir/libs") {
+            from("$hevSrcDir/libs") {
                 include("**/*.so")
             }
             into(outDir)
