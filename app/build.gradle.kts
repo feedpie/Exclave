@@ -1,7 +1,3 @@
-import java.io.FileOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
-
 plugins {
     id("com.android.application")
     id("kotlin-parcelize")
@@ -11,53 +7,6 @@ plugins {
 }
 
 setupApp()
-
-val buildHevSocks5Tunnel by tasks.registering {
-    group = "build"
-    description = "Download pre-built hev-socks5-tunnel native library"
-
-    val jniLibsDir = file("src/main/jniLibs")
-    val hevVersion = "2.15.0"
-    val abis = mapOf(
-        "arm64-v8a" to "hev-socks5-tunnel-linux-arm64",
-        "armeabi-v7a" to "hev-socks5-tunnel-linux-arm32v7",
-        "x86" to "hev-socks5-tunnel-linux-i686",
-        "x86_64" to "hev-socks5-tunnel-linux-x86_64",
-    )
-
-    doLast {
-        abis.forEach { (abi, releaseName) ->
-            val targetDir = file("$jniLibsDir/$abi")
-            val targetFile = file("$targetDir/libhev-socks5-tunnel.so")
-            if (targetFile.exists() && targetFile.length() > 0) return@forEach
-            targetDir.mkdirs()
-            val url = "https://github.com/heiher/hev-socks5-tunnel/releases/download/$hevVersion/$releaseName"
-            logger.lifecycle("Downloading $url -> $targetFile")
-            val conn = URL(url).openConnection() as HttpURLConnection
-            conn.connectTimeout = 30000
-            conn.readTimeout = 120000
-            conn.instanceFollowRedirects = true
-            conn.requestMethod = "GET"
-            try {
-                val input = conn.inputStream
-                val output = FileOutputStream(targetFile)
-                val buf = ByteArray(8192)
-                var read: Int
-                while (input.read(buf).also { read = it } != -1) {
-                    output.write(buf, 0, read)
-                }
-                output.close()
-                input.close()
-            } finally {
-                conn.disconnect()
-            }
-        }
-    }
-}
-
-tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
-    dependsOn(buildHevSocks5Tunnel)
-}
 
 android {
     namespace = "io.nekohasekai.sagernet"

@@ -54,6 +54,22 @@ jobs:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
           ./run lib core
+      - name: Build Hev
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          HEV_DIR="library/hev-tunnel/hev-socks5-tunnel"
+          JNI_DIR="app/src/main/jniLibs"
+          sed -i 's/LOCAL_CFLAGS += -DFD_SET_DEFINED -DSOCKLEN_T_DEFINED -DENABLE_LIBRARY/LOCAL_CFLAGS += -DFD_SET_DEFINED -DSOCKLEN_T_DEFINED -DENABLE_LIBRARY -DPKGNAME=io\/nekohasekai\/sagernet\/bg -DCLSNAME=HevTunnel/' $HEV_DIR/Android.mk
+          cd $HEV_DIR
+          $ANDROID_NDK_HOME/ndk-build -j$(nproc) NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk NDK_APPLICATION_MK=Application.mk || true
+          for abi in arm64-v8a armeabi-v7a x86 x86_64; do
+            if [ -f libs/$abi/libhev-socks5-tunnel.so ]; then
+              mkdir -p ../../$JNI_DIR/$abi
+              cp libs/$abi/libhev-socks5-tunnel.so ../../$JNI_DIR/$abi/
+              echo "Copied $abi/libhev-socks5-tunnel.so"
+            fi
+          done
       - name: Upload Artifacts
         uses: actions/upload-artifact@v7
         with:
