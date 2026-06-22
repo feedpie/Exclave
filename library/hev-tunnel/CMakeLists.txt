@@ -52,6 +52,14 @@ target_include_directories(hev-socks5-tunnel PRIVATE
     hev-socks5-tunnel/third-part/lwip/src/ports/unix/include
     hev-socks5-tunnel/third-part/hev-task-system/include
     hev-socks5-tunnel/third-part/hev-task-system/src
+    hev-socks5-tunnel/third-part/hev-task-system/src/arch/arm
+    hev-socks5-tunnel/third-part/hev-task-system/src/arch/x86
+    hev-socks5-tunnel/third-part/hev-task-system/src/arch/mips
+    hev-socks5-tunnel/third-part/hev-task-system/src/arch/riscv
+    hev-socks5-tunnel/third-part/hev-task-system/src/arch/ppc
+    hev-socks5-tunnel/third-part/hev-task-system/src/arch/s390
+    hev-socks5-tunnel/third-part/hev-task-system/src/arch/arm
+    hev-socks5-tunnel/third-part/hev-task-system/src/arch/x86
 )
 
 target_compile_definitions(hev-socks5-tunnel PRIVATE
