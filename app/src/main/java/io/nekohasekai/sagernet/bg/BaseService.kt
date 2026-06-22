@@ -321,7 +321,7 @@ class BaseService {
         override fun resetTrafficStats() {
             runOnDefaultDispatcher {
                 SagerDatabase.statsDao.deleteAll()
-                // per-app traffic stats reset handled by VpnService
+                (data?.proxy?.service as? VpnService)?.appStats?.clear()
                 val empty = AppStatsList(emptyList())
                 broadcast { item ->
                     if (statsListeners.contains(item.asBinder())) {
@@ -348,7 +348,7 @@ class BaseService {
         }
 
         override fun getTrafficStatsEnabled(): Boolean {
-            return false
+            return DataStore.appTrafficStatistics
         }
 
         override fun close() {
