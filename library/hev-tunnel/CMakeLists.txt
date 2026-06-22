@@ -49,6 +49,7 @@ target_include_directories(hev-socks5-tunnel PRIVATE
     hev-socks5-tunnel/third-part/lwip/src/ports/include
     hev-socks5-tunnel/third-part/lwip/src/ports/unix/include
     hev-socks5-tunnel/third-part/hev-task-system/include
+    hev-socks5-tunnel/third-part/hev-task-system/src
 )
 
 target_compile_definitions(hev-socks5-tunnel PRIVATE
