@@ -24,7 +24,7 @@ val buildHevSocks5Tunnel by tasks.registering {
         val ndkPath = System.getenv("ANDROID_NDK_HOME")
         val ndk = "$ndkPath/$ndkBuild"
 
-        exec {
+        project.exec {
             workingDir = srcDir
             commandLine(ndk, "-j${Runtime.getRuntime().availableProcessors()}", "NDK_PROJECT_PATH=.", "APP_BUILD_SCRIPT=Android.mk")
         }
