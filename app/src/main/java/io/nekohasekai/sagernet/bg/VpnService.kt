@@ -31,6 +31,7 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.PowerManager
 import io.nekohasekai.sagernet.Key
+import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.SagerNet
 import io.nekohasekai.sagernet.aidl.AppStats
 import io.nekohasekai.sagernet.database.DataStore
@@ -46,7 +47,6 @@ import io.nekohasekai.sagernet.utils.Subnet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import libexclavecore.TunImplementation
 import android.net.VpnService as BaseVpnService
 
 @SuppressLint("VpnServicePolicy")
@@ -92,7 +92,7 @@ class VpnService : BaseVpnService(),
     private var metered = false
 
     @Volatile
-    override var underlyingNetwork: Network? = null
+    var underlyingNetwork: Network? = null
         set(value) {
             field = value
             if (active && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -100,7 +100,7 @@ class VpnService : BaseVpnService(),
             }
         }
     private val underlyingNetworks
-        get() = // clearing underlyingNetworks makes Android 9 consider the network to be metered
+        get() =
             if (Build.VERSION.SDK_INT == 28 && metered) null else underlyingNetwork?.let {
                 arrayOf(it)
             }
@@ -229,14 +229,12 @@ class VpnService : BaseVpnService(),
 
         val packageName = packageName
         val proxyApps = DataStore.proxyApps
-        val tunImplementation = DataStore.tunImplementation
-        val needIncludeSelf = tunImplementation == TunImplementation.SYSTEM
         if (proxyApps) {
             val bypass = DataStore.bypass
             val individual = mutableSetOf<String>()
             individual.addAll(DataStore.individual.split('\n').filter { it.isNotEmpty() })
             individual.apply {
-                if (bypass xor needIncludeSelf) add(packageName) else remove(packageName)
+                remove(packageName)
             }.forEach {
                 try {
                     if (bypass) {
@@ -248,8 +246,6 @@ class VpnService : BaseVpnService(),
                     Logs.w(ex)
                 }
             }
-        } else if (!needIncludeSelf) {
-            builder.addDisallowedApplication(packageName)
         }
 
         if (PRIVATE_VLAN4_DNS.isNotEmpty()) {
@@ -306,16 +302,16 @@ class VpnService : BaseVpnService(),
                 SagerDatabase.statsDao.create(
                     StatsEntity(
                         uid = uid,
-                        tcpConnections = stats.tcpConnTotal,
-                        udpConnections = stats.udpConnTotal,
+                        tcpConnections = stats.tcpConnectionsTotal,
+                        udpConnections = stats.udpConnectionsTotal,
                         uplink = stats.uplinkTotal,
                         downlink = stats.downlinkTotal
                     )
                 )
             } else {
                 val entity = all[uid]!!
-                entity.tcpConnections += stats.tcpConnTotal
-                entity.udpConnections += stats.udpConnTotal
+                entity.tcpConnections += stats.tcpConnectionsTotal
+                entity.udpConnections += stats.udpConnectionsTotal
                 entity.uplink += stats.uplinkTotal
                 entity.downlink += stats.downlinkTotal
                 toUpdate.add(entity)

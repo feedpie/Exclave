@@ -15,7 +15,7 @@ object HevTunnel {
             System.loadLibrary("hev-socks5-tunnel")
             loaded = true
         } catch (e: UnsatisfiedLinkError) {
-            Logs.w(TAG, "Failed to load hev-socks5-tunnel library", e)
+            Logs.w("$TAG: Failed to load hev-socks5-tunnel library", e)
         }
     }
 

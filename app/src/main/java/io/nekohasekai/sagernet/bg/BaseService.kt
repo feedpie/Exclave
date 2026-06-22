@@ -181,8 +181,7 @@ class BaseService {
 
         private suspend fun loopStats() {
             var lastQueryTime = 0L
-            val vpnService = data?.proxy?.service as? VpnService ?: return
-            vpnService.appStats.clear()
+            if (data?.proxy?.service !is VpnService) return
 
             PackageCache.awaitLoadSync()
             while (true) {
@@ -191,11 +190,6 @@ class BaseService {
                 val queryTime = System.currentTimeMillis()
                 val sinceLastQueryInSeconds = ((queryTime - lastQueryTime).toDouble() / 1000).toLong()
                 lastQueryTime = queryTime
-
-                if (appStats.isEmpty()) {
-                    appStats.addAll(vpnService.appStats)
-                    vpnService.appStats.clear()
-                }
 
                 val statsList = AppStatsList(appStats.map {
                     val uid = it.uid

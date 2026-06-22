@@ -57,6 +57,10 @@ target_compile_definitions(hev-socks5-tunnel PRIVATE
     ENABLE_LIBRARY
     PKGNAME=io/nekohasekai/sagernet/bg
     CLSNAME=HevTunnel
+    YAML_VERSION_MAJOR=0
+    YAML_VERSION_MINOR=2
+    YAML_VERSION_PATCH=5
+    YAML_VERSION_STRING=\"0.2.5\"
 )
 
 find_library(log-lib log)
