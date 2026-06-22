@@ -536,7 +536,7 @@ class MainActivity : ThemedActivity(),
         if (it) snackbar(R.string.vpn_permission_denied).show()
     }
 
-    override fun trafficUpdated(profileId: Long, stats: TrafficStats, isCurrent: Boolean) {
+    /* override fun */ fun trafficUpdated(profileId: Long, stats: TrafficStats, isCurrent: Boolean) {
         if (profileId == 0L) return
 
         if (isCurrent) binding.stats.updateTraffic(
