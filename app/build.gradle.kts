@@ -8,14 +8,41 @@ plugins {
 
 setupApp()
 
-android {
-    namespace = "io.nekohasekai.sagernet"
+val buildHevSocks5Tunnel by tasks.registering {
+    group = "build"
+    description = "Build hev-socks5-tunnel native library with ndk-build"
 
-    externalNativeBuild {
-        cmake {
-            path = file("../library/hev-tunnel/CMakeLists.txt")
+    val srcDir = file("../library/hev-tunnel/hev-socks5-tunnel")
+    val outDir = file("src/main/jniLibs")
+
+    inputs.dir(file("$srcDir/src"))
+    outputs.dir(file("$srcDir/libs"))
+
+    doLast {
+        val ndkBuild = if (System.getProperty("os.name").startsWith("Windows")) "ndk-build.cmd" else "ndk-build"
+        val ndkPath = android.ndkDirectory.absolutePath
+        val ndk = "$ndkPath/$ndkBuild"
+
+        exec {
+            workingDir = srcDir
+            commandLine(ndk, "-j${Runtime.getRuntime().availableProcessors()}", "NDK_PROJECT_PATH=.", "APP_BUILD_SCRIPT=Android.mk")
+        }
+
+        copy {
+            from("$srcDir/libs") {
+                include("**/*.so")
+            }
+            into(outDir)
         }
     }
+}
+
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("JniLibFolders") }.configureEach {
+    dependsOn(buildHevSocks5Tunnel)
+}
+
+android {
+    namespace = "io.nekohasekai.sagernet"
 }
 
 ksp {
