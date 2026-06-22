@@ -16,8 +16,6 @@ android {
             path = file("../library/hev-tunnel/CMakeLists.txt")
         }
     }
-
-    ndkVersion = "29.0.13113456"
 }
 
 ksp {
