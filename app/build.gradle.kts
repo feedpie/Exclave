@@ -29,10 +29,23 @@ val buildHevSocks5Tunnel by tasks.registering {
             targetDir.mkdirs()
             val url = "https://github.com/heiher/hev-socks5-tunnel/releases/download/$hevVersion/$releaseName"
             logger.lifecycle("Downloading $url -> $targetFile")
-            java.net.URI.create(url).toURL().openStream().use { input ->
-                targetFile.outputStream().use { output ->
-                    input.copyTo(output)
+            val conn = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+            conn.connectTimeout = 30000
+            conn.readTimeout = 120000
+            conn.instanceFollowRedirects = true
+            conn.requestMethod = "GET"
+            try {
+                val input = conn.inputStream
+                val output = java.io.FileOutputStream(targetFile)
+                val buf = ByteArray(8192)
+                var read: Int
+                while (input.read(buf).also { read = it } != -1) {
+                    output.write(buf, 0, read)
                 }
+                output.close()
+                input.close()
+            } finally {
+                conn.disconnect()
             }
         }
     }
