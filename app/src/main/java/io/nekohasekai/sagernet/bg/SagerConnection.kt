@@ -67,7 +67,7 @@ class SagerConnection(private var listenForDeath: Boolean = false) : ServiceConn
     private var connectionActive = false
     private var callbackRegistered = false
     private var callback: Callback? = null
-    private val serviceCallback = object : ISagerNetServiceCallback.Stub() {
+    private val serviceCallback = object : StubWrapper() {
         override fun stateChanged(state: Int, profileName: String?, msg: String?) {
             val s = BaseService.State.entries[state]
             SagerNet.started = s.canStop
