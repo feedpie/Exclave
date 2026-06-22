@@ -47,7 +47,6 @@ class SagerConnection(private var listenForDeath: Boolean = false) : ServiceConn
 
     interface Callback {
         fun stateChanged(state: BaseService.State, profileName: String?, msg: String?)
-        fun trafficUpdated(profileId: Long, stats: TrafficStats, isCurrent: Boolean) {}
         fun statsUpdated(stats: List<AppStats>) {}
         fun observatoryResultsUpdated(groupId: Long) {}
 
@@ -77,14 +76,7 @@ class SagerConnection(private var listenForDeath: Boolean = false) : ServiceConn
             }
         }
 
-        @Suppress("OVERRIDE_DEPRECATION")
-        override fun trafficUpdated(profileId: Long, stats: TrafficStats, isCurrent: Boolean) {
-            val callback = callback ?: return
-            runOnMainDispatcher {
-                callback.trafficUpdated(profileId, stats, isCurrent)
-            }
-        }
-
+        // trafficUpdated removed due to AIDL/Kotlin interop issue
         override fun profilePersisted(profileId: Long) {
             val callback = callback ?: return
             runOnMainDispatcher { callback.profilePersisted(profileId) }

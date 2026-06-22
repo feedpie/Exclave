@@ -52,7 +52,6 @@ import com.google.android.material.snackbar.Snackbar
 import io.nekohasekai.sagernet.*
 import io.nekohasekai.sagernet.aidl.AppStats
 import io.nekohasekai.sagernet.aidl.ISagerNetService
-import io.nekohasekai.sagernet.aidl.TrafficStats
 import io.nekohasekai.sagernet.bg.BaseService
 import io.nekohasekai.sagernet.bg.SagerConnection
 import io.nekohasekai.sagernet.database.*
@@ -536,17 +535,7 @@ class MainActivity : ThemedActivity(),
         if (it) snackbar(R.string.vpn_permission_denied).show()
     }
 
-    /* override fun */ fun trafficUpdated(profileId: Long, stats: TrafficStats, isCurrent: Boolean) {
-        if (profileId == 0L) return
-
-        if (isCurrent) binding.stats.updateTraffic(
-            stats.txRateProxy, stats.rxRateProxy
-        )
-
-        runOnDefaultDispatcher {
-            ProfileManager.postTrafficUpdated(profileId, stats)
-        }
-    }
+    // trafficUpdated removed — see StubWrapper.java
 
     override fun profilePersisted(profileId: Long) {
         runOnDefaultDispatcher {
