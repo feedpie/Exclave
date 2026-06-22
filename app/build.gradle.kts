@@ -21,7 +21,7 @@ val buildHevSocks5Tunnel by tasks.registering {
 
     doLast {
         val ndkBuild = if (System.getProperty("os.name").startsWith("Windows")) "ndk-build.cmd" else "ndk-build"
-        val ndkPath = android.ndkDirectory.absolutePath
+        val ndkPath = System.getenv("ANDROID_NDK_HOME")
         val ndk = "$ndkPath/$ndkBuild"
 
         exec {
