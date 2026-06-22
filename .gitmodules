@@ -4,3 +4,6 @@
 [submodule "plugin/shadowquic/src/main/rust/shadowquic"]
 	path = plugin/shadowquic/src/main/rust/shadowquic
 	url = https://github.com/spongebob888/shadowquic
+[submodule "library/hev-tunnel/hev-socks5-tunnel"]
+	path = library/hev-tunnel/hev-socks5-tunnel
+	url = https://github.com/heiher/hev-socks5-tunnel.git
