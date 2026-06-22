@@ -1,3 +1,7 @@
+import java.io.FileOutputStream
+import java.net.HttpURLConnection
+import java.net.URL
+
 plugins {
     id("com.android.application")
     id("kotlin-parcelize")
@@ -29,14 +33,14 @@ val buildHevSocks5Tunnel by tasks.registering {
             targetDir.mkdirs()
             val url = "https://github.com/heiher/hev-socks5-tunnel/releases/download/$hevVersion/$releaseName"
             logger.lifecycle("Downloading $url -> $targetFile")
-            val conn = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+            val conn = URL(url).openConnection() as HttpURLConnection
             conn.connectTimeout = 30000
             conn.readTimeout = 120000
             conn.instanceFollowRedirects = true
             conn.requestMethod = "GET"
             try {
                 val input = conn.inputStream
-                val output = java.io.FileOutputStream(targetFile)
+                val output = FileOutputStream(targetFile)
                 val buf = ByteArray(8192)
                 var read: Int
                 while (input.read(buf).also { read = it } != -1) {
