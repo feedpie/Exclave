@@ -2677,6 +2677,13 @@ fun buildV2RayConfig(
             })
         }
 
+        routing.rules.add(0, RoutingObject.RuleObject().apply {
+            type = "field"
+            inboundTag = listOf(TAG_SOCKS)
+            port = "53"
+            outboundTag = TAG_DNS_OUT
+        })
+
         if (!forTest) {
             routing.rules.add(0, RoutingObject.RuleObject().apply {
                 type = "field"
