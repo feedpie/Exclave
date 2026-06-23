@@ -67,8 +67,8 @@ jobs:
           $ANDROID_NDK_HOME/ndk-build -j$(nproc) NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk
           for abi in arm64-v8a armeabi-v7a x86 x86_64; do
             if [ -f libs/$abi/libhev-socks5-tunnel.so ]; then
-              mkdir -p ../../$JNI_DIR/$abi
-              cp libs/$abi/libhev-socks5-tunnel.so ../../$JNI_DIR/$abi/
+            mkdir -p ../../../$JNI_DIR/$abi
+            cp libs/$abi/libhev-socks5-tunnel.so ../../../$JNI_DIR/$abi/
               echo "OK: $abi/libhev-socks5-tunnel.so"
             else
               echo "WARN: $abi/libhev-socks5-tunnel.so not found"

@@ -64,8 +64,8 @@ jobs:
           echo "Copy .so files to jniLibs..."
           for abi in arm64-v8a armeabi-v7a x86 x86_64; do
             if [ -f libs/$abi/libhev-socks5-tunnel.so ]; then
-              mkdir -p ../../$JNI_DIR/$abi
-              cp libs/$abi/libhev-socks5-tunnel.so ../../$JNI_DIR/$abi/
+            mkdir -p ../../../$JNI_DIR/$abi
+            cp libs/$abi/libhev-socks5-tunnel.so ../../../$JNI_DIR/$abi/
               echo "OK: $abi/libhev-socks5-tunnel.so"
             else
               echo "WARN: $abi/libhev-socks5-tunnel.so not found"
