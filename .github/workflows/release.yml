@@ -60,7 +60,6 @@ jobs:
           set -e
           HEV_DIR="library/hev-tunnel/hev-socks5-tunnel"
           JNI_DIR="app/src/main/jniLibs"
-          sed -i 's/LOCAL_CFLAGS += -DFD_SET_DEFINED -DSOCKLEN_T_DEFINED -DENABLE_LIBRARY/LOCAL_CFLAGS += -DFD_SET_DEFINED -DSOCKLEN_T_DEFINED -DENABLE_LIBRARY -DPKGNAME=io\/nekohasekai\/sagernet\/bg -DCLSNAME=HevTunnel/' $HEV_DIR/Android.mk
           cd $HEV_DIR
           $ANDROID_NDK_HOME/ndk-build -j$(nproc) NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk
           for abi in arm64-v8a armeabi-v7a x86 x86_64; do
