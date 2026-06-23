@@ -106,6 +106,8 @@ class VpnService : BaseVpnService(),
 
     override suspend fun startProcesses() {
         startVpn()
+        val protectPath = SagerNet.deviceStorage.noBackupFilesDir.resolve("protect_path").absolutePath
+        data.proxy?.v2rayPoint?.withProtect(protectPath)
         data.proxy?.v2rayPoint?.withLocalResolver(this)
         super.startProcesses()
         startHevTunnel()
