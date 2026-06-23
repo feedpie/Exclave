@@ -106,6 +106,7 @@ class VpnService : BaseVpnService(),
 
     override suspend fun startProcesses() {
         startVpn()
+        data.proxy?.v2rayPoint?.withLocalResolver(this)
         super.startProcesses()
         startHevTunnel()
     }
@@ -119,7 +120,6 @@ class VpnService : BaseVpnService(),
     }
 
     override fun killProcesses() {
-        data.proxy?.v2rayPoint?.withLocalResolver(null)
         hevTunnelHandle?.close()
         hevTunnelHandle = null
         if (::conn.isInitialized) conn.close()
@@ -273,7 +273,6 @@ class VpnService : BaseVpnService(),
 
         conn = builder.establish() ?: throw NullConnectionException()
         active = true
-        data.proxy?.v2rayPoint?.withLocalResolver(this)
     }
 
     private fun startHevTunnel() {
