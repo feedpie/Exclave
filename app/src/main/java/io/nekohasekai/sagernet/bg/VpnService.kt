@@ -106,9 +106,6 @@ class VpnService : BaseVpnService(),
 
     override suspend fun startProcesses() {
         startVpn()
-        val protectPath = SagerNet.deviceStorage.noBackupFilesDir.resolve("protect_path").absolutePath
-        data.proxy?.v2rayPoint?.withProtect(protectPath)
-        data.proxy?.v2rayPoint?.withLocalResolver(this)
         super.startProcesses()
         startHevTunnel()
     }
@@ -249,12 +246,16 @@ class VpnService : BaseVpnService(),
             }
         }
 
+        // DNS: use underlying network directly (avoid TUN loop with hev-tunnel)
+        // builder.addDnsServer calls removed — hev-tunnel handles DNS via SOCKS5
+        /*
         if (PRIVATE_VLAN4_DNS.isNotEmpty()) {
             builder.addDnsServer(PRIVATE_VLAN4_DNS)
         }
         if (!PRIVATE_VLAN6_DNS.isNullOrEmpty()) {
             builder.addDnsServer(PRIVATE_VLAN6_DNS)
         }
+        */
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && DataStore.appendHttpProxy && DataStore.requireHttp
             && DataStore.httpUsername.isEmpty() && DataStore.httpPassword.isEmpty()) {
