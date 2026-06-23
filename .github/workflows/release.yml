@@ -34,7 +34,6 @@ jobs:
           go-version: 1.26.4
           cache-dependency-path: "library/core/go.sum"
       - name: Setup Go Mobile
-        # https://github.com/golang/mobile/blob/c31d5b91ecc32c0d598b8fe8457d244ca0b4e815/cmd/gomobile/init.go#L83
         run: |
           go install golang.org/x/mobile/cmd/gomobile@v0.0.0-20260611195102-4dd8f1dbf5d2
           go install golang.org/x/mobile/cmd/gobind@v0.0.0-20260611195102-4dd8f1dbf5d2
@@ -54,24 +53,21 @@ jobs:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
           ./run lib core
-      - name: Build Hev
+      - name: Build Hev Socks5 Tunnel
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
           set -e
           HEV_DIR="library/hev-tunnel/hev-socks5-tunnel"
           JNI_DIR="app/src/main/jniLibs"
-          echo "NDK: $ANDROID_NDK_HOME"
           sed -i 's/LOCAL_CFLAGS += -DFD_SET_DEFINED -DSOCKLEN_T_DEFINED -DENABLE_LIBRARY/LOCAL_CFLAGS += -DFD_SET_DEFINED -DSOCKLEN_T_DEFINED -DENABLE_LIBRARY -DPKGNAME=io\/nekohasekai\/sagernet\/bg -DCLSNAME=HevTunnel/' $HEV_DIR/Android.mk
           cd $HEV_DIR
           $ANDROID_NDK_HOME/ndk-build -j$(nproc) NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk
           for abi in arm64-v8a armeabi-v7a x86 x86_64; do
             if [ -f libs/$abi/libhev-socks5-tunnel.so ]; then
-            mkdir -p ../../../$JNI_DIR/$abi
-            cp libs/$abi/libhev-socks5-tunnel.so ../../../$JNI_DIR/$abi/
-              echo "OK: $abi/libhev-socks5-tunnel.so"
-            else
-              echo "WARN: $abi/libhev-socks5-tunnel.so not found"
+              mkdir -p ../../../$JNI_DIR/$abi
+              cp libs/$abi/libhev-socks5-tunnel.so ../../../$JNI_DIR/$abi/
+              echo "OK: $abi"
             fi
           done
       - name: Upload Artifacts
