@@ -82,6 +82,15 @@ jobs:
           ./gradlew :app:assembleOssDebug
           APK="app/build/outputs/apk/oss/debug"
           echo "APK=$APK" >> $GITHUB_ENV
+      - name: Sign APK
+        run: |
+          APK_DIR="app/build/outputs/apk/oss/debug"
+          keytool -genkey -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 365 -storepass android -keypass android -dname "CN=Android Debug" 2>/dev/null
+          for f in $APK_DIR/*-unsigned.apk; do
+            out="${f%-unsigned.apk}-debug.apk"
+            $ANDROID_HOME/build-tools/35.0.0/apksigner sign --ks debug.keystore --ks-pass pass:android --ks-key-alias androiddebugkey --out "$out" "$f"
+            echo "Signed: $out"
+          done
       - name: Upload Artifacts
         uses: actions/upload-artifact@v7
         with:
