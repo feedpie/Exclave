@@ -53,18 +53,22 @@ jobs:
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
+          set -e
           HEV_DIR="library/hev-tunnel/hev-socks5-tunnel"
           JNI_DIR="app/src/main/jniLibs"
-          # Add PKGNAME/CLSNAME to Android.mk for our JNI wrapper
+          echo "NDK: $ANDROID_NDK_HOME"
+          echo "Building hev-socks5-tunnel..."
           sed -i 's/LOCAL_CFLAGS += -DFD_SET_DEFINED -DSOCKLEN_T_DEFINED -DENABLE_LIBRARY/LOCAL_CFLAGS += -DFD_SET_DEFINED -DSOCKLEN_T_DEFINED -DENABLE_LIBRARY -DPKGNAME=io\/nekohasekai\/sagernet\/bg -DCLSNAME=HevTunnel/' $HEV_DIR/Android.mk
           cd $HEV_DIR
-          $ANDROID_NDK_HOME/ndk-build -j$(nproc) NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk NDK_APPLICATION_MK=Application.mk || true
-          # Copy .so files to jniLibs
+          $ANDROID_NDK_HOME/ndk-build -j$(nproc) NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk
+          echo "Copy .so files to jniLibs..."
           for abi in arm64-v8a armeabi-v7a x86 x86_64; do
             if [ -f libs/$abi/libhev-socks5-tunnel.so ]; then
               mkdir -p ../../$JNI_DIR/$abi
               cp libs/$abi/libhev-socks5-tunnel.so ../../$JNI_DIR/$abi/
-              echo "Copied $abi/libhev-socks5-tunnel.so"
+              echo "OK: $abi/libhev-socks5-tunnel.so"
+            else
+              echo "WARN: $abi/libhev-socks5-tunnel.so not found"
             fi
           done
         uses: actions/cache@v5
